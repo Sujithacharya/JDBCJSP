@@ -1,12 +1,12 @@
 package jdbc;
 
-import java.awt.List;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.mysql.cj.protocol.Resultset;
 
@@ -14,12 +14,13 @@ import model.Student;
 
 public class UserJDBC 
 {
-public String jdbcURL="jdbc:mysql://localhost:3306/Student";
+public String jdbcURL="jdbc:mysql://localhost:3306/Student?useSSl=false";
 public  String jdbcUserName="root";
 public String passWord="root123";
 
-private static  String SELECT_ALL_USER="select * from Student";
-private static  String INSERT_STUDENT="insert into Student"+"(STUDENT_NAME,STUDENT_DOB,STUDENT_DOJ) values"+"(?,?,?);";
+private static  String SELECT_ALL_STUDENTS="select * from Student";
+private static  String INSERT_STUDENT="insert into Student(STUDENT_NAME,STUDENT_DOB,STUDENT_DOJ) values"+"(?,?,?)";
+private static  String DELETE_STUDENT = "delete from Student where STUDENT_NO = ?";
 
 protected Connection getConnection()
 {
@@ -31,7 +32,8 @@ protected Connection getConnection()
 	{
 		// TODO Auto-generated catch block
 		e.printStackTrace();
-	} catch (SQLException e) {
+	} catch (SQLException e)
+	{
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
@@ -58,14 +60,13 @@ public void insertUser(Student student) throws SQLException
 }
 
 // SELECT ALL STUDENT
-
-public ArrayList<Student> selectAllUser()
+public List<Student> selectAllUser()
 {
- ArrayList<Student> students=new ArrayList<Student>();
+	List<Student> students = new ArrayList<>();
 	//1.establish connection
 	try(Connection connection=getConnection();
 			//2.create statement
-			PreparedStatement preparestatement=connection.prepareStatement(SELECT_ALL_USER);)
+			PreparedStatement preparestatement=connection.prepareStatement(SELECT_ALL_STUDENTS);)
 	{
 	//3. execute or update query
 		ResultSet rs=preparestatement.executeQuery();
@@ -79,7 +80,7 @@ public ArrayList<Student> selectAllUser()
 			String DOJ=rs.getString("STUDENT_DOJ");
 			students.add(new Student(id,name, DOB, DOJ));
 			
-			System.out.print(id+""+name+""+DOB+""+DOJ);
+//			System.out.print(id+""+name+""+DOB+""+DOJ);
 			
 		}
 	} catch (SQLException e) {
@@ -88,7 +89,17 @@ public ArrayList<Student> selectAllUser()
 	}
 	return students;
 }
-
+//delete the Student
+public boolean deleteUser(int studentNo) throws SQLException 
+{
+	boolean rowDeleted;
+	try (Connection connection = getConnection();
+			PreparedStatement statement = connection.prepareStatement(DELETE_STUDENT);) {
+		statement.setInt(1,studentNo);
+		rowDeleted = statement.executeUpdate() > 0;
+	}
+	return rowDeleted;
+}
 	
 }
 
