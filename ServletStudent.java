@@ -3,6 +3,7 @@ package web;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -14,26 +15,17 @@ import javax.servlet.http.HttpServletResponse;
 import jdbc.UserJDBC;
 import model.Student;
 
-/**
- * Servlet implementation class ServletStudent
- */
-@WebServlet("/")
+@WebServlet("/ServletStudent")
 public class ServletStudent extends HttpServlet 
 {
-//	private static final long serialVersionUID = 1L;
 	private UserJDBC userjdbc;
-       
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public ServletStudent() {
+    public ServletStudent()
+    {
       this.userjdbc=new UserJDBC();
     }
 
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException 
+	{
 		
 		String action=request.getServletPath();
 		switch(action)
@@ -41,8 +33,8 @@ public class ServletStudent extends HttpServlet
 		case "/insert" :
 			try 
 			{
-				insertUser(request, response);
-			} catch (SQLException e) {
+				insertStudent(request, response);
+			} catch (SQLException e){
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -50,8 +42,17 @@ public class ServletStudent extends HttpServlet
 		case "/new" :
 			showNewForm(request, response);
 			break;
-			default:
+		case "/delete" :
 			try {
+				deleteUser(request, response);
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+		default:
+			try 
+			{
 				listUser(request,response);
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
@@ -63,30 +64,36 @@ public class ServletStudent extends HttpServlet
 	private void listUser(HttpServletRequest request, HttpServletResponse response)throws IOException,SQLException,ServletException 
 	{
 		// TODO Auto-generated method stub
-		ArrayList<Student> students=userjdbc.selectAllUser();
+	    List<Student> students=userjdbc.selectAllUser();
 		request.setAttribute("students",students);
-		RequestDispatcher requestdispatcher=request.getRequestDispatcher("student-list.jsp");
+		request.getRequestDispatcher( "student-list.jsp").include( request, response);
 	}
 
 	private void showNewForm(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException
 	{
-			RequestDispatcher requestDispater=request.getRequestDispatcher("student-form.jsp");
+			RequestDispatcher requestDispater=request.getRequestDispatcher("insert-student.jsp");
 			requestDispater.forward(request, response);
-		
 	}
-	private void insertUser(HttpServletRequest request, HttpServletResponse response) throws IOException, SQLException
+	private void insertStudent(HttpServletRequest request, HttpServletResponse response) throws IOException, SQLException
     {
 	String name=request.getParameter("name");
 	String dob=request.getParameter("dob");
 	String doj=request.getParameter("doj");
 	Student newSt=new Student(name,dob,doj);
 	userjdbc.insertUser(newSt);
-	response.sendRedirect("ArrayList");
+	response.sendRedirect("list");
     }
+	
+	private void deleteUser(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException
+	{
+		int studentNo = Integer.parseInt(request.getParameter("id"));
+		userjdbc.deleteUser(studentNo);
+		response.sendRedirect("list");
+		
+	}
 
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
+
+	
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException 
 	{
 
